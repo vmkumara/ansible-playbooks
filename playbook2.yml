@@ -1,6 +1,7 @@
 ---
 - name: configure apache2
   hosts: all
+  serial: 1
   tasks:
     - name: install apache2
       apt:
