@@ -1,0 +1,18 @@
+---
+- name: setup of jenkins and required softwares
+  hosts: jenkins
+  tasks:
+    - name: install required s/w
+      apt:
+        name: "{{item.a}}"
+        state: present
+        update_cache: "{{item.b}}"
+      with_items:
+        - {a: openjdk-11-jdk,b: yes}
+        - {a: git,b: no}
+        - {a: maven,b: no}
+    - name: download jenkins.war file
+      get_url:
+        url: https://get.jenkins.io/war-stable/2.387.3/jenkins.war
+        dest: /home/ubuntu
+

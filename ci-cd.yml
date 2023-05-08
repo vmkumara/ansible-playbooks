@@ -1,0 +1,51 @@
+---
+- name: install required s/w's for cicd
+  hosts: all
+  tasks: 
+     - name: install required s/w's
+       apt:
+         name: "{{item.a}}"
+         state: present
+         update_cache: "{{item.b}}"
+       with_items:
+         - {a: openjdk-11-jdk,b: yes}
+         - {a: git,b: no}
+         - {a: maven,b: no}
+         - {a: tomcat9,b: no}
+         - {a: tomcat9-admin,b: no}
+- name: continuous download and build
+  hosts: devserver
+  tasks:
+     - name: download the dev code from github
+       git:
+          repo: https://github.com/intelliqittrainings/maven.git
+          dest: dev-git
+     - name: create an artifact
+       shell: cd dev-git;mvn package
+     - name: fetch artifact from devserver to controller
+       fetch:
+          src: dev-git/webapp/target/webapp.war
+          dest: /tmp
+- name: continuous deployment and continuous testing           
+  hosts: qaserver
+  tasks:
+     - name: deploy artifact into tomcat on the qaserver
+       copy:
+           src: /tmp/172.31.90.64/dev-git/webapp/target/webapp.war
+           dest: /var/lib/tomcat9/webapps/testapp.war
+     - name: download selenium code from github
+       git:
+          repo: https://github.com/intelliqittrainings/FunctionalTesting.git
+          dest: test.git
+     - name: exicute selenium scripts
+       shell: java -jar test.git/testing.jar
+- name: continuous delivery
+  hosts: prodserver
+  tasks:
+    - name: deploy artifact into tomcat on the prodserver
+      copy:
+           src: /tmp/172.31.90.64/dev-git/webapp/target/webapp.war
+           dest: /var/lib/tomcat9/webapps/prodapp.war
+...
+      
+

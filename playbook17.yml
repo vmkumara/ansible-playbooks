@@ -1,0 +1,9 @@
+---
+- name: create users
+  hosts: all
+  tasks:
+    - name: user creation
+      user:
+        name: hari
+        password: 123456
+...
